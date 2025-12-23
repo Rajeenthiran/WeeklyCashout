@@ -1,0 +1,222 @@
+<div class="sales-container">
+  <div class="header">
+    <h2>Daily Sales Cashout</h2>
+
+    <div class="tabs">
+      <button [class.active]="activeTab === 'cashout'" (click)="activeTab = 'cashout'">Daily Cashout</button>
+      <button [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">History</button>
+      <button [class.active]="activeTab === 'employees'" (click)="activeTab = 'employees'">Manage Employees</button>
+    </div>
+
+    <div class="controls" *ngIf="activeTab === 'cashout'">
+      <span class="week-range" *ngIf="weekData">{{ getWeekRange() }}</span>
+      <input type="week" [ngModel]="selectedWeek" (change)="onWeekChange($event)" class="week-input">
+      <button class="save-btn" (click)="save()">Save Week</button>
+    </div>
+  </div>
+
+  <div *ngIf="!weekData && activeTab === 'cashout'" class="empty-state">
+    <h3>Please select a week to begin</h3>
+  </div>
+
+  <!-- EMPLOYEE MANAGEMENT TAB -->
+  <div class="employee-section" *ngIf="activeTab === 'employees'">
+    <div class="employee-card">
+      <h3>Manage Employee Names</h3>
+      <p>Add the names that should appear in the dropdown list.</p>
+
+      <div class="employee-list">
+        <div class="employee-row" *ngFor="let name of names; let i = index; trackBy: trackByIndex">
+          <input type="text" [(ngModel)]="names[i]" placeholder="Employee Name">
+          <button class="remove-btn" (click)="removeEmployeeName(i)">×</button>
+        </div>
+      </div>
+
+      <div class="employee-actions">
+        <button class="add-row-btn" (click)="addEmployeeName()">+ Add Name</button>
+        <button class="save-btn" (click)="saveEmployees()">Save Employees</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="employee-section" *ngIf="activeTab === 'history'">
+    <div class="employee-card">
+      <h3>Saved Weeks</h3>
+      <p>Click on a week to view details.</p>
+
+      <div class="employee-list">
+        <div class="employee-row" *ngFor="let week of savedWeeks" (click)="openWeek(week)"
+          style="cursor: pointer; justify-content: space-between; transition: all 0.2s;"
+          onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+          onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+          <span style="font-size: 1.1rem; font-weight: 500;">{{ week }}</span>
+          <span class="icon" style="color: #38ef7d">➜</span>
+        </div>
+        <div *ngIf="savedWeeks.length === 0" class="empty-state" style="padding: 1rem;">
+          No saved weeks found.
+        </div>
+      </div>
+
+      <div class="employee-actions">
+        <button class="add-row-btn" (click)="loadHistory()">Refresh List</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASHOUT TAB -->
+  <div class="week-wrapper" *ngIf="weekData && activeTab === 'cashout'">
+    <div class="day-section" *ngFor="let day of weekData.days; let dayIndex = index">
+      <h3>{{ day.dayName }} <span class="date-label">{{ day.date | date }}</span></h3>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;"></th>
+              <th>Name</th>
+              <th>Direct</th>
+              <th>Visa</th>
+              <th>Master</th>
+              <th>Amex</th>
+              <th>Diner</th>
+              <th>Coupons</th>
+              <th>Cash</th>
+              <th class="highlight">Total</th>
+              <th class="highlight-tips">Tips (4%)</th>
+              <th style="color: #6dd5fa;">Reading</th>
+              <th style="color: #ff9966;">Diff</th>
+              <th class="highlight-tips">Final $</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of day.rows; let rowIndex = index">
+              <td>
+                <button class="remove-btn" (click)="removeRow(day, rowIndex)">×</button>
+              </td>
+              <td>
+                <select [(ngModel)]="row.name" (ngModelChange)="updateDropdownNames()">
+                  <option value="" disabled>Select Name</option>
+                  <option *ngFor="let n of dropdownNames" [value]="n">{{n}}</option>
+                </select>
+              </td>
+              <!-- DIRECT -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'direct')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'direct')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'direct')">{{ safeParse(row.direct) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'direct')" type="text" [(ngModel)]="row.direct"
+                  (blur)="stopEditing()" placeholder="0" autofocus>
+              </td>
+
+              <!-- VISA -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'visa')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'visa')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'visa')">{{ safeParse(row.visa) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'visa')" type="text" [(ngModel)]="row.visa"
+                  (blur)="stopEditing()" placeholder="0" autofocus>
+              </td>
+
+              <!-- MASTER -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'master')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'master')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'master')">{{ safeParse(row.master) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'master')" type="text" [(ngModel)]="row.master"
+                  (blur)="stopEditing()" placeholder="0" autofocus>
+              </td>
+
+              <!-- AMEX -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'amex')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'amex')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'amex')">{{ safeParse(row.amex) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'amex')" type="text" [(ngModel)]="row.amex"
+                  (blur)="stopEditing()" placeholder="0" autofocus>
+              </td>
+
+              <!-- DINER -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'diner')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'diner')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'diner')">{{ safeParse(row.diner) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'diner')" type="text" [(ngModel)]="row.diner"
+                  (blur)="stopEditing()" placeholder="0" autofocus>
+              </td>
+
+              <!-- COUPONS -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'coupons')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'coupons')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'coupons')">{{ safeParse(row.coupons) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'coupons')" type="text" [(ngModel)]="row.coupons"
+                  (blur)="stopEditing()" placeholder="0" autofocus>
+              </td>
+
+              <!-- CASH -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'cash')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'cash')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'cash')">{{ safeParse(row.cash) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'cash')" type="text" [(ngModel)]="row.cash"
+                  (blur)="stopEditing()" placeholder="0" autofocus>
+              </td>
+              <td class="calculated">{{ getRowTotal(row) | currency }}</td>
+              <td class="calculated-tips">{{ getRowTips(row) | currency }}</td>
+
+              <!-- READING -->
+              <td (click)="startEditing(dayIndex, rowIndex, 'reading')"
+                [class.editing]="isEditing(dayIndex, rowIndex, 'reading')">
+                <span *ngIf="!isEditing(dayIndex, rowIndex, 'reading')">{{ safeParse(row.reading) | currency }}</span>
+                <input *ngIf="isEditing(dayIndex, rowIndex, 'reading')" type="text" [(ngModel)]="row.reading"
+                  (blur)="stopEditing()" placeholder="0">
+              </td>
+
+              <!-- DIFF (Reading - Total) -->
+              <td style="font-weight: bold; color: #ff9966;">{{ getRowDiff(row) | currency }}</td>
+
+              <!-- FINAL (Tips + Diff) -->
+              <td class="calculated-tips">{{ getRowFinal(row) | currency }}</td>
+            </tr>
+            <tr>
+              <td colspan="11">
+                <button class="add-row-btn" (click)="addRow(day)">+ Add Row to {{ day.dayName }}</button>
+              </td>
+            </tr>
+            <tr class="summary-row">
+              <td></td>
+              <td>TOTALS</td>
+              <td>{{ getDayTotal(day, 'direct') | currency }}</td>
+              <td>{{ getDayTotal(day, 'visa') | currency }}</td>
+              <td>{{ getDayTotal(day, 'master') | currency }}</td>
+              <td>{{ getDayTotal(day, 'amex') | currency }}</td>
+              <td>{{ getDayTotal(day, 'diner') | currency }}</td>
+              <td>{{ getDayTotal(day, 'coupons') | currency }}</td>
+              <td>{{ getDayTotal(day, 'cash') | currency }}</td>
+              <td class="grand-total">{{ getDayGrandTotal(day) | currency }}</td>
+              <td class="grand-tips">{{ getDayTotalTips(day) | currency }}</td>
+              <td style="color: #6dd5fa;">{{ getDayTotalReading(day) | currency }}</td>
+              <td style="color: #ff9966;">{{ getDayTotalDiff(day) | currency }}</td>
+              <td class="grand-tips">{{ getDayTotalFinal(day) | currency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WEEKLY SUMMARY -->
+    <div class="week-summary">
+      <h2>Weekly Summary</h2>
+      <div class="table-wrapper">
+        <table>
+          <tr class="summary-row">
+            <td colspan="2">WEEK TOTALS</td>
+            <td>{{ getWeekTotal('direct') | currency }}</td>
+            <td>{{ getWeekTotal('visa') | currency }}</td>
+            <td>{{ getWeekTotal('master') | currency }}</td>
+            <td>{{ getWeekTotal('amex') | currency }}</td>
+            <td>{{ getWeekTotal('diner') | currency }}</td>
+            <td>{{ getWeekTotal('coupons') | currency }}</td>
+            <td>{{ getWeekTotal('cash') | currency }}</td>
+            <td class="grand-total">{{ getWeekGrandTotal() | currency }}</td>
+            <td class="grand-tips">{{ getWeekTotalTips() | currency }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
