@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 
 interface SalesRow {
   name: string;
@@ -37,10 +38,15 @@ interface WeekData {
 export class SalesTable {
   private apiService = inject(ApiService);
   private toast = inject(ToastService);
+  private auth = inject(AuthService);
 
   names: string[] = []; // Current active employees (for management tab)
   dropdownNames: string[] = []; // Merged list for dropdowns (active + legacy)
   savedWeeks: string[] = []; // List of saved week IDs
+
+  get companyName() {
+    return this.auth.currentCompanyNameSig();
+  }
 
   // Tab State
   activeTab: 'cashout' | 'employees' | 'history' = 'cashout';
@@ -62,8 +68,18 @@ export class SalesTable {
   }
 
   constructor() {
-    this.loadEmployees();
-    this.loadHistory();
+    // React to company ID changes to load data
+    effect(() => {
+      const cid = this.auth.currentCompanyIdSig();
+      if (cid) {
+        this.loadEmployees();
+        this.loadHistory();
+      }
+    });
+  }
+
+  async logout() {
+    await this.auth.logout();
   }
 
   async loadHistory() {
@@ -253,7 +269,7 @@ export class SalesTable {
   }
 
   getRowTips(row: SalesRow): number {
-    return this.getRowTotal(row) * 0.04;
+    return this.safeParse(row.reading) * 0.04;
   }
 
   getDayTotal(day: DayEntry, field: keyof SalesRow): number {
@@ -331,6 +347,14 @@ export class SalesTable {
 
   async save() {
     if (!this.weekData) return;
+
+    // Validate Company ID presence
+    const cid = this.auth.currentCompanyIdSig();
+    if (!cid) {
+      this.toast.show('Error: No Company ID found. Please Login again.', 'error');
+      return;
+    }
+
     try {
       // Save entire week structure
       await this.apiService.saveData(this.weekData);
@@ -338,7 +362,39 @@ export class SalesTable {
       this.loadHistory(); // Refresh history list
     } catch (error) {
       console.error('Error saving data:', error);
-      this.toast.show('Error saving data.', 'error');
+      this.toast.show('Error saving data. See console.', 'error');
+    }
+  }
+
+  // Helper to format 2023-W01 -> "Jan 2 - Jan 8, 2023"
+  getWeekRangeLabel(weekId: string): string {
+    if (!weekId) return '';
+    try {
+      const parts = weekId.split('-W');
+      if (parts.length < 2) return weekId;
+
+      const year = parseInt(parts[0]);
+      const week = parseInt(parts[1]);
+
+      // Calculate start of ISO week
+      const simple = new Date(year, 0, 4); // Jan 4th is always in week 1
+      const day = simple.getDay() || 7; // Get day (Mon=1 ... Sun=7)
+      simple.setDate(simple.getDate() + (week - 1) * 7 - day + 1);
+
+      const start = simple;
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+
+      const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const fmtFull = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      // If same year
+      if (start.getFullYear() === end.getFullYear()) {
+        return `${fmt(start)} - ${fmt(end)}, ${start.getFullYear()}`;
+      }
+      return `${fmtFull(start)} - ${fmtFull(end)}`;
+    } catch (e) {
+      return weekId;
     }
   }
 

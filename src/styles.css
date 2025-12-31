@@ -1,1 +1,21 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global Styles */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: white;
+    /* Apply the main gradient globally to cover all edges */
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background-attachment: fixed;
+    /* Keeps background static during scroll */
+}
+
+/* Ensure helper classes are available if needed */
+.text-gradient {
+    background: linear-gradient(to right, #38ef7d, #11998e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
