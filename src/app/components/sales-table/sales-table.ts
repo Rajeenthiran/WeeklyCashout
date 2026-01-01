@@ -49,7 +49,10 @@ export class SalesTable {
   }
 
   // Tab State
-  activeTab: 'cashout' | 'employees' | 'history' = 'cashout';
+  activeTab: 'cashout' | 'employees' | 'history' | 'tipout' = 'cashout';
+
+  // Config State
+  tipoutPercentage: number = 4; // Default 4% (stored as integer for UI 4, calculation 0.04)
 
   selectedWeek: string = '';
   weekData: WeekData | null = null;
@@ -74,6 +77,7 @@ export class SalesTable {
       if (cid) {
         this.loadEmployees();
         this.loadHistory();
+        this.loadConfig();
       }
     });
   }
@@ -127,6 +131,27 @@ export class SalesTable {
     }
   }
 
+  async loadConfig() {
+    try {
+      const config = await this.apiService.getCompanyConfig();
+      if (config && typeof config['tipoutPercentage'] === 'number') {
+        this.tipoutPercentage = config['tipoutPercentage'];
+      }
+    } catch (e) {
+      console.error('Error loading config', e);
+    }
+  }
+
+  async saveConfig() {
+    try {
+      await this.apiService.saveCompanyConfig({ tipoutPercentage: this.tipoutPercentage });
+      this.toast.show('Settings saved successfully!', 'success');
+    } catch (e) {
+      console.error('Error saving settings', e);
+      this.toast.show('Failed to save settings', 'error');
+    }
+  }
+
   updateDropdownNames() {
     // Start with active names
     const merged = new Set(this.names);
@@ -165,6 +190,7 @@ export class SalesTable {
       this.toast.show('Failed to save employees', 'error');
     }
   }
+
   async onWeekChange(event: any) {
     const weekVal = event.target.value;
     if (weekVal) {
@@ -174,8 +200,10 @@ export class SalesTable {
         const data = await this.apiService.getWeekData(weekVal);
         if (data) {
           this.weekData = data as WeekData;
+          this.toast.show(`Loaded Week: ${weekVal}`, 'success');
         } else {
           this.generateWeekData(weekVal);
+          this.toast.show('New week created', 'info');
         }
         this.updateDropdownNames();
       } catch (e) {
@@ -269,7 +297,7 @@ export class SalesTable {
   }
 
   getRowTips(row: SalesRow): number {
-    return this.safeParse(row.reading) * 0.04;
+    return this.safeParse(row.reading) * (this.tipoutPercentage / 100);
   }
 
   getDayTotal(day: DayEntry, field: keyof SalesRow): number {

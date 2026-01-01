@@ -479,6 +479,24 @@ td.editing input {
     flex: 1;
 }
 
+/* Settings Styles */
+.form-group {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.form-group label {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.form-group input:focus {
+    border-color: #fbab7e !important;
+    box-shadow: 0 0 15px rgba(251, 171, 126, 0.1);
+}
+
 @media (max-width: 900px) {
     :host {
         padding: 1rem;

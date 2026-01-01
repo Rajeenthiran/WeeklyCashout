@@ -23,6 +23,7 @@
       <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">History</button>
       <button class="tab-btn" [class.active]="activeTab === 'employees'" (click)="activeTab = 'employees'">Manage
         Employees</button>
+      <button class="tab-btn" [class.active]="activeTab === 'tipout'" (click)="activeTab = 'tipout'">Tipout</button>
     </div>
 
     <div class="controls" *ngIf="activeTab === 'cashout'">
@@ -83,6 +84,30 @@
     </div>
   </div>
 
+  <!-- SETTINGS TAB -->
+  <div class="employee-section" *ngIf="activeTab === 'tipout'">
+    <div class="employee-card">
+      <h3>Tipout Configuration</h3>
+      <p>Configure the tipout percentage.</p>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="tipout" style="display: block; margin-bottom: 0.5rem; color: #fff;">Tipout Percentage (%)</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input id="tipout" type="number" [(ngModel)]="tipoutPercentage" min="0" max="100" step="0.1"
+            style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white;">
+          <span style="font-weight: bold; font-size: 1.2rem;">%</span>
+        </div>
+        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 5px;">
+          This percentage is applied to the 'Reading' value of each row to calculate tips.
+        </p>
+      </div>
+
+      <div class="employee-actions" style="margin-top: 2rem;">
+        <button class="save-btn" (click)="saveConfig()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
   <!-- CASHOUT TAB -->
   <div class="week-wrapper" *ngIf="weekData && activeTab === 'cashout'">
     <div class="day-section" *ngFor="let day of weekData.days; let dayIndex = index">
@@ -102,7 +127,7 @@
               <th>Coupons</th>
               <th>Cash</th>
               <th class="highlight">Total</th>
-              <th class="highlight-tips">Tips (4%)</th>
+              <th class="highlight-tips">Tips ({{ tipoutPercentage }}%)</th>
               <th style="color: #6dd5fa;">Reading</th>
               <th style="color: #ff9966;">Diff</th>
               <th class="highlight-tips">Final $</th>

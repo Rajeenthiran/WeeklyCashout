@@ -73,4 +73,17 @@ export class ApiService {
     const docRef = doc(this.firestore, 'companies', this.companyId, 'settings', 'employees');
     return setDoc(docRef, { names });
   }
+
+  async getCompanyConfig() {
+    if (!this.companyId) return null;
+    const docRef = doc(this.firestore, 'companies', this.companyId, 'settings', 'config');
+    const snapshot = await getDoc(docRef);
+    return snapshot.exists() ? snapshot.data() : null;
+  }
+
+  async saveCompanyConfig(config: any) {
+    if (!this.companyId) throw new Error('No Company ID');
+    const docRef = doc(this.firestore, 'companies', this.companyId, 'settings', 'config');
+    return setDoc(docRef, config);
+  }
 }
