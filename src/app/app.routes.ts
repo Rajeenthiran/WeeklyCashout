@@ -36,6 +36,6 @@ export const publicGuard: CanActivateFn = (route, state) => {
 export const routes: Routes = [
     { path: '', component: SalesTable, canActivate: [authGuard] },
     { path: 'login', component: Login, canActivate: [publicGuard] },
-    { path: 'register', component: Register, canActivate: [publicGuard] },
+    // { path: 'register', component: Register, canActivate: [publicGuard] },
     { path: '**', redirectTo: '' }
 ];
