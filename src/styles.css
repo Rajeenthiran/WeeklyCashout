@@ -1,6 +1,7 @@
 /* Global Styles */
 html,
 body {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -13,9 +14,16 @@ body {
     /* Keeps background static during scroll */
 }
 
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
 /* Ensure helper classes are available if needed */
 .text-gradient {
     background: linear-gradient(to right, #38ef7d, #11998e);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
