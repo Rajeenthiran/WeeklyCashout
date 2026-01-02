@@ -551,3 +551,14 @@ td.editing input {
         min-width: 140px;
     }
 }
+
+.payment-error input,
+.payment-error span {
+    color: #ff4757 !important;
+    font-weight: bold;
+}
+
+.payment-error input {
+    border: 1px solid #ff4757 !important;
+    background: rgba(255, 71, 87, 0.1) !important;
+}

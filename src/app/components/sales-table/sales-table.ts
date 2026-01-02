@@ -279,6 +279,11 @@ export class SalesTable {
   }
 
   safeParse(val: any): number {
+    // Detect invalid input patterns such as double dots (e.g., "50..34") and show an error toast.
+    if (typeof val === 'string' && val.includes('..')) {
+      this.toast.show('Invalid input: unexpected ".." in numeric field.', 'error');
+      return 0;
+    }
     if (typeof val === 'number') return val;
     if (!val) return 0;
     try {
@@ -298,6 +303,14 @@ export class SalesTable {
 
   getRowTips(row: SalesRow): number {
     return this.safeParse(row.reading) * (this.tipoutPercentage / 100);
+  }
+
+  isOverReading(row: SalesRow): boolean {
+    const total = this.getRowTotal(row);
+    const reading = this.safeParse(row.reading);
+    // If reading is 0, we might strictly say it's over reading if total > 0.
+    // User logic: "if i add extra".
+    return total > reading;
   }
 
   getDayTotal(day: DayEntry, field: keyof SalesRow): number {
