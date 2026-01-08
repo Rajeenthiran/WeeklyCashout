@@ -57,17 +57,50 @@ export class SalesTable {
   selectedWeek: string = '';
   weekData: WeekData | null = null;
   editingCell: string | null = null;
+  private isNavigating = false;
 
   startEditing(dayIndex: number, rowIndex: number, field: string) {
     this.editingCell = `${dayIndex}-${rowIndex}-${field}`;
   }
 
   stopEditing() {
+    if (this.isNavigating) return;
     this.editingCell = null;
   }
 
   isEditing(dayIndex: number, rowIndex: number, field: string): boolean {
     return this.editingCell === `${dayIndex}-${rowIndex}-${field}`;
+  }
+
+  onEnter(dayIndex: number, rowIndex: number, field: string) {
+    this.isNavigating = true;
+    const fields = ['direct', 'visa', 'master', 'amex', 'diner', 'coupons', 'cash', 'reading'];
+    const currentFieldIndex = fields.indexOf(field);
+
+    if (currentFieldIndex < fields.length - 1) {
+      // Move to next field in same row
+      this.startEditing(dayIndex, rowIndex, fields[currentFieldIndex + 1]);
+    } else {
+      // Last field of row - move to next row
+      if (this.weekData && this.weekData.days[dayIndex].rows[rowIndex + 1]) {
+        this.startEditing(dayIndex, rowIndex + 1, fields[0]);
+      } else if (this.weekData && this.weekData.days[dayIndex + 1]) {
+        // Last row of day - move to next day
+        this.startEditing(dayIndex + 1, 0, fields[0]);
+      } else {
+        // End of table - stop editing
+        this.isNavigating = false;
+        this.stopEditing();
+        return;
+      }
+    }
+
+    // Reset flag after a short delay to allow blur event to pass
+    setTimeout(() => {
+      this.isNavigating = false;
+      const el = document.getElementById('active-input');
+      if (el) el.focus();
+    }, 50);
   }
 
   constructor() {
@@ -289,6 +322,49 @@ export class SalesTable {
     }
   }
 
+  isValidNumber(val: any): boolean {
+    if (val === null || val === undefined || val === '') return true;
+    const str = val.toString();
+
+    // Check for double dots or trailing dots which are usually mistakes
+    if (str.includes('..')) return false;
+
+    // Check each part of an addition expression
+    const parts = str.split('+');
+    for (const part of parts) {
+      const p = part.trim();
+      if (p === '') continue;
+
+      // A part should have at most one decimal point
+      const dots = p.split('.').length - 1;
+      if (dots > 1) return false;
+
+      // Should be a valid number after parsing
+      if (isNaN(parseFloat(p)) && p !== '.') return false;
+    }
+
+    return true;
+  }
+
+  hasValidationErrors(): boolean {
+    if (!this.weekData) return false;
+    for (const day of this.weekData.days) {
+      for (const row of day.rows) {
+        if (!this.isValidNumber(row.direct) ||
+          !this.isValidNumber(row.visa) ||
+          !this.isValidNumber(row.master) ||
+          !this.isValidNumber(row.amex) ||
+          !this.isValidNumber(row.diner) ||
+          !this.isValidNumber(row.coupons) ||
+          !this.isValidNumber(row.cash) ||
+          !this.isValidNumber(row.reading)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   // evaluateExpression removed - we keep the expression in the model
 
   getRowTotal(row: SalesRow): number {
@@ -375,6 +451,11 @@ export class SalesTable {
 
   async save() {
     if (!this.weekData) return;
+
+    if (this.hasValidationErrors()) {
+      this.toast.show('Please correct the red fields before saving.', 'error');
+      return;
+    }
 
     // Validate Company ID presence
     const cid = this.auth.currentCompanyIdSig();
