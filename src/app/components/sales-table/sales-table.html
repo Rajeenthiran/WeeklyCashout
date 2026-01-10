@@ -150,7 +150,7 @@
                 [class.has-error]="!isValidNumber(row.direct)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'direct')">{{ safeParse(row.direct) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'direct')" type="text" [(ngModel)]="row.direct"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'direct')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'direct')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
 
@@ -159,7 +159,7 @@
                 [class.editing]="isEditing(dayIndex, rowIndex, 'visa')" [class.has-error]="!isValidNumber(row.visa)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'visa')">{{ safeParse(row.visa) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'visa')" type="text" [(ngModel)]="row.visa"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'visa')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'visa')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
 
@@ -169,7 +169,7 @@
                 [class.has-error]="!isValidNumber(row.master)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'master')">{{ safeParse(row.master) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'master')" type="text" [(ngModel)]="row.master"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'master')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'master')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
 
@@ -178,7 +178,7 @@
                 [class.editing]="isEditing(dayIndex, rowIndex, 'amex')" [class.has-error]="!isValidNumber(row.amex)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'amex')">{{ safeParse(row.amex) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'amex')" type="text" [(ngModel)]="row.amex"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'amex')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'amex')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
 
@@ -187,7 +187,7 @@
                 [class.editing]="isEditing(dayIndex, rowIndex, 'diner')" [class.has-error]="!isValidNumber(row.diner)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'diner')">{{ safeParse(row.diner) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'diner')" type="text" [(ngModel)]="row.diner"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'diner')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'diner')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
 
@@ -197,7 +197,7 @@
                 [class.has-error]="!isValidNumber(row.coupons)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'coupons')">{{ safeParse(row.coupons) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'coupons')" type="text" [(ngModel)]="row.coupons"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'coupons')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'coupons')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
 
@@ -206,7 +206,7 @@
                 [class.editing]="isEditing(dayIndex, rowIndex, 'cash')" [class.has-error]="!isValidNumber(row.cash)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'cash')">{{ safeParse(row.cash) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'cash')" type="text" [(ngModel)]="row.cash"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'cash')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'cash')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
               <td class="calculated">{{ getRowTotal(row) | currency }}</td>
@@ -218,7 +218,7 @@
                 [class.has-error]="!isValidNumber(row.reading)">
                 <span *ngIf="!isEditing(dayIndex, rowIndex, 'reading')">{{ safeParse(row.reading) | currency }}</span>
                 <input *ngIf="isEditing(dayIndex, rowIndex, 'reading')" type="text" [(ngModel)]="row.reading"
-                  id="active-input" (blur)="stopEditing()" (keydown.enter)="onEnter(dayIndex, rowIndex, 'reading')"
+                  id="active-input" (blur)="stopEditing()" (keydown)="onKeyDown($event, dayIndex, rowIndex, 'reading')"
                   (focus)="$any($event.target).select()" placeholder="0" autofocus>
               </td>
 

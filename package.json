@@ -2,33 +2,56 @@
   "name": "weekly-cashout",
   "version": "1.0.0",
   "private": true,
+  "main": "main.js",
+
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test"
+    "test": "ng test",
+
+    "electron": "electron .",
+
+    "build:electron": "ng build --configuration production --base-href ./ --deploy-url ./ && electron .",
+
+    "dist:electron": "ng build --configuration production --base-href ./ --deploy-url ./ && electron-builder"
   },
+
   "dependencies": {
     "@angular/animations": "20.2.4",
     "@angular/common": "20.2.4",
     "@angular/compiler": "20.2.4",
     "@angular/core": "20.2.4",
+    "@angular/fire": "^20.0.0",
     "@angular/forms": "20.2.4",
     "@angular/platform-browser": "20.2.4",
     "@angular/platform-browser-dynamic": "20.2.4",
     "@angular/router": "20.2.4",
-
-    "@angular/fire": "^20.0.0",
     "firebase": "^10.7.0",
-
     "rxjs": "~7.8.0",
     "tslib": "^2.6.2",
     "zone.js": "~0.15.0"
   },
+
   "devDependencies": {
-    "@angular/cli": "20.2.2",
-    "@angular/build": "20.2.2",
+    "@angular/build": "20.2.4",
+    "@angular/cli": "20.2.4",
     "@angular/compiler-cli": "20.2.4",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.4.0",
     "typescript": "~5.9.3"
+  },
+
+  "build": {
+    "appId": "com.weekly.cashout",
+    "productName": "Weekly Cashout",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   }
 }

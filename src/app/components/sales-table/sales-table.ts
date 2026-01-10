@@ -72,35 +72,89 @@ export class SalesTable {
     return this.editingCell === `${dayIndex}-${rowIndex}-${field}`;
   }
 
-  onEnter(dayIndex: number, rowIndex: number, field: string) {
-    this.isNavigating = true;
+  onKeyDown(event: KeyboardEvent, dayIndex: number, rowIndex: number, field: string) {
     const fields = ['direct', 'visa', 'master', 'amex', 'diner', 'coupons', 'cash', 'reading'];
     const currentFieldIndex = fields.indexOf(field);
 
-    if (currentFieldIndex < fields.length - 1) {
-      // Move to next field in same row
-      this.startEditing(dayIndex, rowIndex, fields[currentFieldIndex + 1]);
-    } else {
-      // Last field of row - move to next row
-      if (this.weekData && this.weekData.days[dayIndex].rows[rowIndex + 1]) {
-        this.startEditing(dayIndex, rowIndex + 1, fields[0]);
-      } else if (this.weekData && this.weekData.days[dayIndex + 1]) {
-        // Last row of day - move to next day
-        this.startEditing(dayIndex + 1, 0, fields[0]);
+    let nextDay = dayIndex;
+    let nextRow = rowIndex;
+    let nextField = field;
+    let shouldNavigate = false;
+
+    if (event.key === 'Enter' || event.key === 'ArrowRight') {
+      if (currentFieldIndex < fields.length - 1) {
+        nextField = fields[currentFieldIndex + 1];
+        shouldNavigate = true;
       } else {
-        // End of table - stop editing
-        this.isNavigating = false;
-        this.stopEditing();
-        return;
+        // Last field of row - move to next row
+        if (this.weekData && this.weekData.days[dayIndex].rows[rowIndex + 1]) {
+          nextRow = rowIndex + 1;
+          nextField = fields[0];
+          shouldNavigate = true;
+        } else if (this.weekData && this.weekData.days[dayIndex + 1]) {
+          // Last row of day - move to next day
+          nextDay = dayIndex + 1;
+          nextRow = 0;
+          nextField = fields[0];
+          shouldNavigate = true;
+        }
+      }
+    } else if (event.key === 'ArrowLeft') {
+      if (currentFieldIndex > 0) {
+        nextField = fields[currentFieldIndex - 1];
+        shouldNavigate = true;
+      } else {
+        // First field of row - move to prev row
+        if (rowIndex > 0) {
+          nextRow = rowIndex - 1;
+          nextField = fields[fields.length - 1];
+          shouldNavigate = true;
+        } else if (dayIndex > 0) {
+          // First row of day - move to prev day last row
+          nextDay = dayIndex - 1;
+          const prevDay = this.weekData?.days[nextDay];
+          if (prevDay && prevDay.rows.length > 0) {
+            nextRow = prevDay.rows.length - 1;
+            nextField = fields[fields.length - 1];
+            shouldNavigate = true;
+          }
+        }
+      }
+    } else if (event.key === 'ArrowDown') {
+      if (this.weekData && this.weekData.days[dayIndex].rows[rowIndex + 1]) {
+        nextRow = rowIndex + 1;
+        shouldNavigate = true;
+      } else if (this.weekData && this.weekData.days[dayIndex + 1]) {
+        nextDay = dayIndex + 1;
+        nextRow = 0;
+        shouldNavigate = true;
+      }
+    } else if (event.key === 'ArrowUp') {
+      if (rowIndex > 0) {
+        nextRow = rowIndex - 1;
+        shouldNavigate = true;
+      } else if (dayIndex > 0) {
+        nextDay = dayIndex - 1;
+        const prevDay = this.weekData?.days[nextDay];
+        if (prevDay && prevDay.rows.length > 0) {
+          nextRow = prevDay.rows.length - 1;
+          shouldNavigate = true;
+        }
       }
     }
 
-    // Reset flag after a short delay to allow blur event to pass
-    setTimeout(() => {
-      this.isNavigating = false;
-      const el = document.getElementById('active-input');
-      if (el) el.focus();
-    }, 50);
+    if (shouldNavigate) {
+      event.preventDefault();
+      this.isNavigating = true;
+      this.startEditing(nextDay, nextRow, nextField);
+
+      // Reset flag after a short delay to allow blur event to pass
+      setTimeout(() => {
+        this.isNavigating = false;
+        const el = document.getElementById('active-input');
+        if (el) el.focus();
+      }, 50);
+    }
   }
 
   constructor() {
