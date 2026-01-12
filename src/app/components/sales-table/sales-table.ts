@@ -578,6 +578,17 @@ export class SalesTable {
     window.print();
   }
 
+  printPreview() {
+    if (window.electronAPI) {
+      window.electronAPI.printPreview();
+    } else {
+      console.warn('Electron API not available');
+      this.toast.show('Print preview is only available in the desktop app.', 'info');
+      // Fallback to standard print if desired, or skip
+      // window.print();
+    }
+  }
+
   // Helper to format 2023-W01 -> "Jan 2 - Jan 8, 2023"
   getWeekRangeLabel(weekId: string): string {
     if (!weekId) return '';

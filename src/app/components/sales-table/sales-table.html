@@ -31,8 +31,16 @@
         <input type="week" [ngModel]="selectedWeek" (change)="onWeekChange($event)" class="week-input mb-1">
         <span class="text-sm font-bold text-[#fbab7e]" *ngIf="selectedWeek">{{ getWeekRangeLabel(selectedWeek) }}</span>
       </div>
-      <button class="save-btn" (click)="save()">Save Week</button>
-      <button class="print-btn" (click)="print()">Print</button>
+      <button class="save-btn" (click)="save()">
+        <span>💾</span> Save Week
+      </button>
+
+      <button class="print-btn" (click)="print()">
+        <span>🖨️</span> Print
+      </button>
+      <button class="preview-btn" (click)="printPreview()">
+        <span>🔍</span> Preview
+      </button>
     </div>
   </div>
 

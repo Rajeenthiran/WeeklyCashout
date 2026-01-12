@@ -20,11 +20,10 @@
 }
 
 .controls {
-    width: 30%;
     display: flex;
-    justify-content: space-between;
+    gap: 1rem;
     align-items: flex-end;
-    margin-left: 20px;
+    flex-wrap: nowrap;
 }
 
 h2 {
@@ -111,6 +110,9 @@ h2 {
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .save-btn:hover {
@@ -144,12 +146,33 @@ h2 {
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .print-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+}
+
+.preview-btn {
+    background: linear-gradient(45deg, #8e2de2, #4a00e0);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(142, 45, 226, 0.4);
 }
 
 .empty-state {
