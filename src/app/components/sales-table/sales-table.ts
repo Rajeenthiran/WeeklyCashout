@@ -7,13 +7,14 @@ import { AuthService } from '../../services/auth.service';
 
 interface SalesRow {
   name: string;
-  direct: number | string;
+  debit: number | string;
   visa: number | string;
   master: number | string;
   amex: number | string;
   diner: number | string;
   coupons: number | string;
   cash: number | string;
+  cctips: number | string;
   reading: number | string;
 }
 
@@ -73,7 +74,7 @@ export class SalesTable {
   }
 
   onKeyDown(event: KeyboardEvent, dayIndex: number, rowIndex: number, field: string) {
-    const fields = ['direct', 'visa', 'master', 'amex', 'diner', 'coupons', 'cash', 'reading'];
+    const fields = ['debit', 'visa', 'master', 'amex', 'diner', 'coupons', 'cash', 'cctips', 'reading'];
     const currentFieldIndex = fields.indexOf(field);
 
     let nextDay = dayIndex;
@@ -349,13 +350,14 @@ export class SalesTable {
   addRow(day: DayEntry) {
     day.rows.push({
       name: '',
-      direct: 0,
+      debit: 0,
       visa: 0,
       master: 0,
       amex: 0,
       diner: 0,
       coupons: 0,
       cash: 0,
+      cctips: 0,
       reading: 0
     });
   }
@@ -404,13 +406,14 @@ export class SalesTable {
     if (!this.weekData) return false;
     for (const day of this.weekData.days) {
       for (const row of day.rows) {
-        if (!this.isValidNumber(row.direct) ||
+        if (!this.isValidNumber(row.debit) ||
           !this.isValidNumber(row.visa) ||
           !this.isValidNumber(row.master) ||
           !this.isValidNumber(row.amex) ||
           !this.isValidNumber(row.diner) ||
           !this.isValidNumber(row.coupons) ||
           !this.isValidNumber(row.cash) ||
+          !this.isValidNumber(row.cctips) ||
           !this.isValidNumber(row.reading)) {
           return true;
         }
@@ -422,12 +425,24 @@ export class SalesTable {
   // evaluateExpression removed - we keep the expression in the model
 
   getRowTotal(row: SalesRow): number {
-    return this.safeParse(row.direct) + this.safeParse(row.visa) + this.safeParse(row.master) +
+    return this.safeParse(row.debit) + this.safeParse(row.visa) + this.safeParse(row.master) +
       this.safeParse(row.amex) + this.safeParse(row.diner) + this.safeParse(row.coupons) + this.safeParse(row.cash);
   }
 
   getRowTips(row: SalesRow): number {
     return this.safeParse(row.reading) * (this.tipoutPercentage / 100);
+  }
+
+  getRowCCTipsPayout(row: SalesRow): number {
+    return this.safeParse(row.cctips) * 0.02;
+  }
+
+  getDayTotalCCTips(day: DayEntry): number {
+    return day.rows.reduce((acc, row) => acc + this.safeParse(row.cctips), 0);
+  }
+
+  getDayTotalCCTipsPayout(day: DayEntry): number {
+    return day.rows.reduce((acc, row) => acc + this.getRowCCTipsPayout(row), 0);
   }
 
   getDayTotal(day: DayEntry, field: keyof SalesRow): number {
@@ -496,11 +511,40 @@ export class SalesTable {
     return this.weekData.days.reduce((acc, day) => acc + this.getDayTotalFinal(day), 0);
   }
 
+  getWeekTotalCCTips(): number {
+    if (!this.weekData) return 0;
+    return this.weekData.days.reduce((acc, day) => acc + this.getDayTotalCCTips(day), 0);
+  }
+
+  getWeekTotalCCTipsPayout(): number {
+    if (!this.weekData) return 0;
+    return this.weekData.days.reduce((acc, day) => acc + this.getDayTotalCCTipsPayout(day), 0);
+  }
+
   getWeekRange(): string {
     if (!this.weekData || this.weekData.days.length === 0) return '';
     const start = this.weekData.days[0].date;
     const end = this.weekData.days[6].date;
     return `${start} - ${end}`;
+  }
+
+  getFormattedPrintRange(): string {
+    if (!this.weekData || this.weekData.days.length === 0) return '';
+    try {
+      const startStr = this.weekData.days[0].date;
+      const endStr = this.weekData.days[this.weekData.days.length - 1].date;
+
+      const [sy, sm, sd] = startStr.split('-').map(Number);
+      const [ey, em, ed] = endStr.split('-').map(Number);
+
+      const start = new Date(sy, sm - 1, sd);
+      const end = new Date(ey, em - 1, ed);
+
+      const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return `${fmt(start)} to ${fmt(end)}`;
+    } catch (e) {
+      return this.getWeekRange();
+    }
   }
 
   async save() {
@@ -527,6 +571,11 @@ export class SalesTable {
       console.error('Error saving data:', error);
       this.toast.show('Error saving data. See console.', 'error');
     }
+  }
+
+  // Print Functionality
+  print() {
+    window.print();
   }
 
   // Helper to format 2023-W01 -> "Jan 2 - Jan 8, 2023"
