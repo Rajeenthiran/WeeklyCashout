@@ -142,6 +142,7 @@
               <th class="highlight-tips">Tips ({{ tipoutPercentage }}%)</th>
               <th style="color: #85FFBD;">CCTips</th>
               <th style="color: #85FFBD;">CCTips Payout</th>
+              <th class="highlight-tips">Total Tips</th>
               <th style="color: #6dd5fa;">Reading</th>
               <th style="color: #ff9966;">Diff</th>
               <th class="highlight-tips">Final $</th>
@@ -238,6 +239,9 @@
               <!-- CCTIPS PAYOUT -->
               <td class="calculated-tips">{{ getRowCCTipsPayout(row) | currency }}</td>
 
+              <!-- TOTAL TIPS (Sum Tips + CCTips Payout) -->
+              <td class="calculated-tips" style="font-weight: bold;">{{ getRowTotalAllTips(row) | currency }}</td>
+
               <!-- READING -->
               <td (click)="startEditing(dayIndex, rowIndex, 'reading')"
                 [class.editing]="isEditing(dayIndex, rowIndex, 'reading')"
@@ -255,7 +259,7 @@
               <td class="calculated-tips">{{ getRowFinal(row) | currency }}</td>
             </tr>
             <tr>
-              <td colspan="13">
+              <td colspan="14">
                 <button class="add-row-btn" (click)="addRow(day)">+ Add Row to {{ day.dayName }}</button>
               </td>
             </tr>
@@ -273,6 +277,8 @@
               <td class="grand-tips">{{ getDayTotalTips(day) | currency }}</td>
               <td>{{ getDayTotalCCTips(day) | currency }}</td>
               <td class="grand-tips">{{ getDayTotalCCTipsPayout(day) | currency }}</td>
+              <td class="grand-tips" style="background: rgba(133, 255, 189, 0.1);">{{ getDayTotalAllTips(day) | currency
+                }}</td>
               <td style="color: #6dd5fa;">{{ getDayTotalReading(day) | currency }}</td>
               <td style="color: #ff9966;">{{ getDayTotalDiff(day) | currency }}</td>
               <td class="grand-tips">{{ getDayTotalFinal(day) | currency }}</td>
@@ -300,6 +306,7 @@
             <td class="grand-tips">{{ getWeekTotalTips() | currency }}</td>
             <td>{{ getWeekTotalCCTips() | currency }}</td>
             <td class="grand-tips">{{ getWeekTotalCCTipsPayout() | currency }}</td>
+            <td class="grand-tips">{{ getWeekTotalAllTips() | currency }}</td>
           </tr>
         </table>
       </div>

@@ -437,12 +437,20 @@ export class SalesTable {
     return this.safeParse(row.cctips) * 0.02;
   }
 
+  getRowTotalAllTips(row: SalesRow): number {
+    return this.getRowTips(row) + this.getRowCCTipsPayout(row);
+  }
+
   getDayTotalCCTips(day: DayEntry): number {
     return day.rows.reduce((acc, row) => acc + this.safeParse(row.cctips), 0);
   }
 
   getDayTotalCCTipsPayout(day: DayEntry): number {
     return day.rows.reduce((acc, row) => acc + this.getRowCCTipsPayout(row), 0);
+  }
+
+  getDayTotalAllTips(day: DayEntry): number {
+    return day.rows.reduce((acc, row) => acc + this.getRowTotalAllTips(row), 0);
   }
 
   getDayTotal(day: DayEntry, field: keyof SalesRow): number {
@@ -519,6 +527,11 @@ export class SalesTable {
   getWeekTotalCCTipsPayout(): number {
     if (!this.weekData) return 0;
     return this.weekData.days.reduce((acc, day) => acc + this.getDayTotalCCTipsPayout(day), 0);
+  }
+
+  getWeekTotalAllTips(): number {
+    if (!this.weekData) return 0;
+    return this.weekData.days.reduce((acc, day) => acc + this.getDayTotalAllTips(day), 0);
   }
 
   getWeekRange(): string {

@@ -3,20 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "main": "main.js",
-
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
-
     "electron": "electron .",
-
     "build:electron": "ng build --configuration production --base-href ./ --deploy-url ./ && electron .",
-
     "dist:electron": "ng build --configuration production --base-href ./ --deploy-url ./ && electron-builder"
   },
-
   "dependencies": {
     "@angular/animations": "20.2.4",
     "@angular/common": "20.2.4",
@@ -32,7 +27,6 @@
     "tslib": "^2.6.2",
     "zone.js": "~0.15.0"
   },
-
   "devDependencies": {
     "@angular/build": "20.2.4",
     "@angular/cli": "20.2.4",
@@ -41,7 +35,6 @@
     "electron-builder": "^26.4.0",
     "typescript": "~5.9.3"
   },
-
   "build": {
     "appId": "com.weekly.cashout",
     "productName": "Weekly Cashout",
@@ -51,6 +44,7 @@
       "package.json"
     ],
     "win": {
+      "icon": "favicon.ico",
       "target": "nsis"
     }
   }
