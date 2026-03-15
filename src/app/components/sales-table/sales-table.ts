@@ -1,6 +1,7 @@
 import { Component, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import { ApiService } from '../../services/api';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
@@ -600,6 +601,104 @@ export class SalesTable {
       // Fallback to standard print if desired, or skip
       // window.print();
     }
+  }
+
+  // Export to Excel Functionality
+  exportToExcel() {
+    if (!this.weekData || this.weekData.days.length === 0) {
+      this.toast.show('No data to export', 'error');
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const wsData: any[][] = [];
+
+    // Title / Header
+    wsData.push([`Weekly Cashout Report from ${this.getFormattedPrintRange()}`]);
+    wsData.push([]);
+
+    // Headers
+    const headers = [
+      'Name', 'Debit', 'Visa', 'Master', 'Amex', 'Diner', 'Coupons', 'Cash',
+      'Total', `Tips (${this.tipoutPercentage}%)`, 'CCTips', 'CCTips Payout', 'Total Tips', 'Reading', 'Diff', 'Final $'
+    ];
+
+    // Iterate through days
+    for (const day of this.weekData.days) {
+      wsData.push([`${day.dayName} - ${new Date(day.date).toLocaleDateString()}`]);
+      wsData.push(headers);
+
+      for (const row of day.rows) {
+        wsData.push([
+          row.name || '',
+          this.safeParse(row.debit),
+          this.safeParse(row.visa),
+          this.safeParse(row.master),
+          this.safeParse(row.amex),
+          this.safeParse(row.diner),
+          this.safeParse(row.coupons),
+          this.safeParse(row.cash),
+          this.getRowTotal(row),
+          this.getRowTips(row),
+          this.safeParse(row.cctips),
+          this.getRowCCTipsPayout(row),
+          this.getRowTotalAllTips(row),
+          this.safeParse(row.reading),
+          this.getRowDiff(row),
+          this.getRowFinal(row)
+        ]);
+      }
+
+      // Day Summary
+      wsData.push([
+        'TOTALS',
+        this.getDayTotal(day, 'debit'),
+        this.getDayTotal(day, 'visa'),
+        this.getDayTotal(day, 'master'),
+        this.getDayTotal(day, 'amex'),
+        this.getDayTotal(day, 'diner'),
+        this.getDayTotal(day, 'coupons'),
+        this.getDayTotal(day, 'cash'),
+        this.getDayGrandTotal(day),
+        this.getDayTotalTips(day),
+        this.getDayTotalCCTips(day),
+        this.getDayTotalCCTipsPayout(day),
+        this.getDayTotalAllTips(day),
+        this.getDayTotalReading(day),
+        this.getDayTotalDiff(day),
+        this.getDayTotalFinal(day)
+      ]);
+      wsData.push([]); // Empty row for spacing
+    }
+
+    // Weekly Summary
+    wsData.push(['WEEKLY SUMMARY']);
+    wsData.push([
+      'WEEK TOTALS',
+      this.getWeekTotal('debit'),
+      this.getWeekTotal('visa'),
+      this.getWeekTotal('master'),
+      this.getWeekTotal('amex'),
+      this.getWeekTotal('diner'),
+      this.getWeekTotal('coupons'),
+      this.getWeekTotal('cash'),
+      this.getWeekGrandTotal(),
+      this.getWeekTotalTips(),
+      this.getWeekTotalCCTips(),
+      this.getWeekTotalCCTipsPayout(),
+      this.getWeekTotalAllTips(),
+      this.getWeekTotalReading(),
+      this.getWeekTotalDiff(),
+      this.getWeekTotalFinal()
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Weekly Cashout');
+
+    const companyStr = (this.companyName || 'Company').replace(/[\/\s,\\:"*?<>|]/g, '_').replace(/__+/g, '_');
+    const rangeLabel = this.getFormattedPrintRange().replace(/[\/\s,\\:"*?<>|]/g, '_').replace(/__+/g, '_');
+    const fileName = `${companyStr}_Weekly_Cashout_${rangeLabel}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   }
 
   // Helper to format 2023-W01 -> "Jan 2 - Jan 8, 2023"
