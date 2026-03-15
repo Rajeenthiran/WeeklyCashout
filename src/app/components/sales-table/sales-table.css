@@ -20,11 +20,10 @@
 }
 
 .controls {
-    width: 30%;
     display: flex;
-    justify-content: space-between;
+    gap: 1rem;
     align-items: flex-end;
-    margin-left: 20px;
+    flex-wrap: nowrap;
 }
 
 h2 {
@@ -111,6 +110,9 @@ h2 {
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .save-btn:hover {
@@ -133,6 +135,44 @@ h2 {
     background: rgba(255, 71, 87, 0.8);
     color: white;
     box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+}
+
+.print-btn {
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+}
+
+.preview-btn {
+    background: linear-gradient(45deg, #8e2de2, #4a00e0);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(142, 45, 226, 0.4);
 }
 
 .empty-state {
@@ -186,7 +226,7 @@ th,
 td {
     padding: 12px 16px;
     text-align: right;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 tbody tr {
@@ -565,5 +605,112 @@ td.editing input {
 
     .col-name {
         min-width: 140px;
+    }
+}
+
+.print-header {
+    display: none;
+}
+
+@media print {
+    .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 30px;
+        color: black;
+    }
+
+    .print-header h1 {
+        margin: 0;
+        font-size: 28pt;
+        color: black !important;
+        font-weight: bold;
+    }
+
+    .print-week-range {
+        margin: 10px 0 0 0;
+        font-size: 20pt;
+        color: black !important;
+        font-weight: bold;
+    }
+
+    :host {
+        background: white;
+        color: black;
+        padding: 0;
+    }
+
+    .top-header,
+    .tabs-row,
+    .controls,
+    .remove-btn,
+    .add-row-btn,
+    .week-summary {
+        display: none !important;
+    }
+
+    .table-wrapper {
+        background: white;
+        box-shadow: none;
+        border: none;
+        overflow: visible;
+    }
+
+    table {
+        color: black;
+        width: 100%;
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        color: black;
+        padding: 5px;
+        font-size: 10pt;
+    }
+
+    td input {
+        border: none;
+        background: transparent;
+        color: black;
+        padding: 0;
+        text-align: right;
+    }
+
+    /* Force background colors if needed for highlighting */
+    .highlight,
+    .highlight-tips,
+    .calculated,
+    .calculated-tips {
+        background: transparent;
+        -webkit-text-fill-color: black;
+        color: black;
+    }
+
+    .week-wrapper {
+        display: block;
+    }
+
+    .day-section h3 {
+        color: black;
+        border-bottom: 2px solid black;
+        padding-bottom: 5px;
+    }
+
+    .date-label {
+        color: #555;
+        background: transparent;
+        font-weight: bold;
+    }
+
+    @page {
+        size: landscape;
+        margin: 1cm;
     }
 }
