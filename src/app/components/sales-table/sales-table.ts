@@ -1,4 +1,4 @@
-import { Component, inject, effect } from '@angular/core';
+import { Component, inject, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
@@ -45,6 +45,20 @@ export class SalesTable {
   names: string[] = []; // Current active employees (for management tab)
   dropdownNames: string[] = []; // Merged list for dropdowns (active + legacy)
   savedWeeks: string[] = []; // List of saved week IDs
+
+  originalWeekDataStr: string = '';
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: any) {
+    if (this.hasUnsavedChanges()) {
+      $event.returnValue = true;
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    if (!this.weekData) return false;
+    return JSON.stringify(this.weekData) !== this.originalWeekDataStr;
+  }
 
   get companyName() {
     return this.auth.currentCompanyNameSig();
@@ -192,6 +206,7 @@ export class SalesTable {
       const data = await this.apiService.getWeekData(weekId);
       if (data) {
         this.weekData = data as WeekData;
+        this.originalWeekDataStr = JSON.stringify(this.weekData);
         this.updateDropdownNames();
         this.toast.show(`Loaded Week: ${weekId}`, 'success');
       } else {
@@ -289,6 +304,7 @@ export class SalesTable {
         const data = await this.apiService.getWeekData(weekVal);
         if (data) {
           this.weekData = data as WeekData;
+          this.originalWeekDataStr = JSON.stringify(this.weekData);
           this.toast.show(`Loaded Week: ${weekVal}`, 'success');
         } else {
           this.generateWeekData(weekVal);
@@ -346,6 +362,7 @@ export class SalesTable {
       weekId: weekId,
       days: days
     };
+    this.originalWeekDataStr = JSON.stringify(this.weekData);
   }
 
   addRow(day: DayEntry) {
@@ -579,6 +596,7 @@ export class SalesTable {
     try {
       // Save entire week structure
       await this.apiService.saveData(this.weekData);
+      this.originalWeekDataStr = JSON.stringify(this.weekData);
       this.toast.show('Week data saved successfully!', 'success');
       this.loadHistory(); // Refresh history list
     } catch (error) {
